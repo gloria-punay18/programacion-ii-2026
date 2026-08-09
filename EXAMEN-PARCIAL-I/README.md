@@ -57,4 +57,4 @@ El requerimiento principal de la evaluaci√≥n se cumple mediante la implementaci√
 
 
 
-# [https://github.com/TU-USUARIO/NOMBRE-DE-TU-REPOSITORIO.git](https://github.com/TU-USUARIO/NOMBRE-DE-TU-REPOSITORIO.git)
+# https://github.com/gloria-punay18/programacion-ii-2026/blob/main/EXAMEN-PARCIAL-I/Evidencias/Ejecuci%C3%B3n.docx
