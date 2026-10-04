@@ -43,7 +43,16 @@ control-despensa-api/
 * **`ControlDespensaApiApplication.java`:** Clase principal que inicia Spring Boot y el servidor Tomcat.
 
 ## 6. Tabla de endpoints.
-![img.png](../../../Desktop/programacion-ii-2026/control-despensa-api/control-despensa-api/img.png)
+### Tabla de Endpoints
+
+| Operación | Método | Ruta | Estado esperado |
+| :--- | :---: | :--- | :---: |
+| Listar productos | `GET` | `/api/productos` | `200` |
+| Buscar por identificador | `GET` | `/api/productos/{id}` | `200` o `404` |
+| Buscar por categoría | `GET` | `/api/productos/categoria/{categoria}` | `200` |
+| Consultar stock bajo | `GET` | `/api/productos/stock-bajo` | `200` |
+| Consultar producto de mayor valor | `GET` | `/api/productos/mayor-valor` | `200` |
+| Obtener resumen | `GET` | `/api/productos/resumen` | `200` |
 ## 7. Instrucciones para Ejecutar la Aplicación
 
 1. **Abrir el proyecto** en IntelliJ IDEA.
