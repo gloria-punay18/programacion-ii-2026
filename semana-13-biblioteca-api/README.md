@@ -133,8 +133,7 @@ La interfaz consume la API REST del backend mediante las siguientes rutas HTTP:
       http://localhost:8080
       ```
 
-### Captura de la página terminada
-*(Pega aquí la imagen de tu interfaz web funcionando con la tabla y el formulario)*
+
 
 
 
