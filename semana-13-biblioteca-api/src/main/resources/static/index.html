@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestión - Biblioteca Personal</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .container {
+      max-width: 1100px;
+    }
+    .card-header {
+      font-weight: bold;
+    }
+    .table-responsive {
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    #mensaje {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container my-4">
+  <!-- Encabezado y Titulo -->
+  <header class="pb-3 mb-4 border-bottom text-center">
+    <h1 class="display-5 fw-bold text-primary">Biblioteca Personal</h1>
+    <p class="lead text-secondary">Sistema de Gestión de Libros - API REST & Spring Boot</p>
+  </header>
+
+  <!-- Contenedor para Mensajes de Éxito o Error -->
+  <div id="mensaje" class="alert alert-dismissible fade show" role="alert">
+    <span id="mensajeTexto"></span>
+    <button type="button" class="btn-close" onclick="ocultarMensaje()"></button>
+  </div>
+
+  <!-- Formulario de Registro -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <i class="bi bi-book"></i> Registrar Nuevo Libro
+    </div>
+    <div class="card-body">
+      <form id="libroForm" onsubmit="guardarLibro(event)">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label for="codigo" class="form-label">Código</label>
+            <input type="text" class="form-control" id="codigo" maxlength="20" required placeholder="Ej. LIB-005">
+          </div>
+          <div class="col-md-6">
+            <label for="titulo" class="form-label">Título</label>
+            <input type="text" class="form-control" id="titulo" maxlength="120" required placeholder="Título del libro">
+          </div>
+          <div class="col-md-3">
+            <label for="autor" class="form-label">Autor</label>
+            <input type="text" class="form-control" id="autor" maxlength="100" required placeholder="Nombre del autor">
+          </div>
+          <div class="col-md-3">
+            <label for="categoria" class="form-label">Categoría</label>
+            <input type="text" class="form-control" id="categoria" maxlength="50" required placeholder="Ej. Novela, Ciencia">
+          </div>
+          <div class="col-md-3">
+            <label for="anioPublicacion" class="form-label">Año de Publicación</label>
+            <input type="number" class="form-control" id="anioPublicacion" min="1" max="2099" required placeholder="Ej. 2021">
+          </div>
+          <div class="col-md-3">
+            <label for="precio" class="form-label">Precio (Q)</label>
+            <input type="number" class="form-control" id="precio" step="0.01" min="0.01" required placeholder="0.00">
+          </div>
+          <div class="col-md-3 d-flex align-items-center">
+            <div class="form-check mt-4">
+              <input class="form-check-input" type="checkbox" id="disponible" checked>
+              <label class="form-check-label" for="disponible">Disponible</label>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 text-end">
+          <button type="submit" class="btn btn-success px-4">Guardar Libro</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabla de Libros Registrados -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-secondary text-white">
+      Libros Registrados
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0 align-middle">
+          <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Código</th>
+            <th>Título</th>
+            <th>Autor</th>
+            <th>Categoría</th>
+            <th>Año</th>
+            <th>Precio</th>
+            <th>Estado</th>
+            <th class="text-center">Acción</th>
+          </tr>
+          </thead>
+          <tbody id="tablaLibros">
+          <!-- Los registros cargados mediante JS / fetch se insertarán aquí -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript para consumo de la API -->
+<script>
+  const API_URL = '/api/libros';
+
+
+  document.addEventListener('DOMContentLoaded', obtenerLibros);
+
+
+  function mostrarMensaje(texto, tipo) {
+    const mensajeDiv = document.getElementById('mensaje');
+    const mensajeTexto = document.getElementById('mensajeTexto');
+    mensajeDiv.className = `alert alert-${tipo} alert-dismissible fade show`;
+    mensajeTexto.innerText = texto;
+    mensajeDiv.style.display = 'block';
+  }
+
+  function ocultarMensaje() {
+    document.getElementById('mensaje').style.display = 'none';
+  }
+
+
+  function obtenerLibros() {
+    fetch(API_URL)
+            .then(response => {
+              if (!response.ok) throw new Error('Error al obtener la lista de libros');
+              return response.json();
+            })
+            .then(libros => {
+              const tbody = document.getElementById('tablaLibros');
+              tbody.innerHTML = '';
+
+              if (libros.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-3">No hay libros registrados en la base de datos.</td></tr>`;
+                return;
+              }
+
+              libros.forEach(libro => {
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                            <td>${libro.id}</td>
+                            <td><strong>${libro.codigo}</strong></td>
+                            <td>${libro.titulo}</td>
+                            <td>${libro.autor}</td>
+                            <td>${libro.categoria}</td>
+                            <td>${libro.anioPublicacion}</td>
+                            <td>Q${parseFloat(libro.precio).toFixed(2)}</td>
+                            <td>
+                                <span class="badge ${libro.disponible ? 'bg-success' : 'bg-danger'}">
+                                    ${libro.disponible ? 'Disponible' : 'No disponible'}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-danger btn-sm" onclick="eliminarLibro(${libro.id})">
+                                    Eliminar
+                                </button>
+                            </td>
+                        `;
+                tbody.appendChild(fila);
+              });
+            })
+            .catch(error => {
+              mostrarMensaje('No fue posible cargar la lista de libros.', 'danger');
+              console.error(error);
+            });
+  }
+
+
+  function guardarLibro(event) {
+    event.preventDefault();
+
+    const nuevoLibro = {
+      codigo: document.getElementById('codigo').value.trim(),
+      titulo: document.getElementById('titulo').value.trim(),
+      autor: document.getElementById('autor').value.trim(),
+      categoria: document.getElementById('categoria').value.trim(),
+      anioPublicacion: parseInt(document.getElementById('anioPublicacion').value),
+      precio: parseFloat(document.getElementById('precio').value),
+      disponible: document.getElementById('disponible').checked
+    };
+
+    fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(nuevoLibro)
+    })
+            .then(response => {
+              if (response.ok) {
+                mostrarMensaje('Libro registrado correctamente.', 'success');
+                document.getElementById('libroForm').reset();
+                document.getElementById('disponible').checked = true;
+                obtenerLibros();
+              } else {
+                mostrarMensaje('No fue posible completar la operación.', 'danger');
+              }
+            })
+            .catch(error => {
+              mostrarMensaje('No fue posible completar la operación.', 'danger');
+              console.error(error);
+            });
+  }
+
+
+  function eliminarLibro(id) {
+    const confirmacion = confirm('¿Desea eliminar el libro seleccionado?');
+    if (!confirmacion) return;
+
+    fetch(`${API_URL}/${id}`, {
+      method: 'DELETE'
+    })
+            .then(response => {
+              if (response.ok) {
+                mostrarMensaje('Libro eliminado correctamente.', 'success');
+                obtenerLibros();
+              } else {
+                mostrarMensaje('No fue posible completar la operación.', 'danger');
+              }
+            })
+            .catch(error => {
+              mostrarMensaje('No fue posible completar la operación.', 'danger');
+              console.error(error);
+            });
+  }
+</script>
+</body>
+</html>
