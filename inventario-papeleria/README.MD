@@ -51,3 +51,48 @@ src/main/java/com/papeleria/inventario/
 ├── repository/             # Interfaces de acceso a datos (Spring Data JPA)
 ├── service/                # Lógica de negocio y validaciones
 └── controller/             # Endpoints REST para la comunicación con el cliente
+```
+
+# Sistema de Gestión de Inventario - Papelería
+
+Proyecto backend desarrollado en Java y Spring Boot para la gestión de productos e inventario mediante una arquitectura de API REST, validación de datos de entrada y persistencia en PostgreSQL.
+
+---
+
+## DTO, validaciones y manejo de errores
+
+### Entidad utilizada
+* **Producto (`Producto.java`):** Entidad de JPA mapeada a la tabla `productos` en PostgreSQL. Contiene las propiedades `id`, `codigo`, `nombre`, `descripcion`, `precio`, `stock`, `stockMinimo` y la relación `@ManyToOne` con la entidad `Categoria`.
+
+### DTO creado
+* **ProductoRequestDTO (`ProductoRequestDTO.java`):** Objeto de transferencia de datos utilizado para la recepción de información en los endpoints de creación (`POST`) y actualización (`PUT`), desacoplando el modelo de persistencia de la capa web.
+
+### Validaciones implementadas
+* **`@NotBlank`:** Aplicada en `codigo` y `nombre` para asegurar que no sean nulos ni contengan únicamente espacios en blanco.
+* **`@Size(max = 150)`:** Limita la longitud máxima del campo `nombre` a 150 caracteres.
+* **`@NotNull`:** Garantiza que `precio`, `stock` y `stockMinimo` sean obligatorios en la solicitud.
+* **`@DecimalMin(value = "0.01")`:** Valida que el precio del producto sea un monto estrictamente mayor a cero.
+* **`@Min(value = 0)`:** Asegura que los valores numéricos de `stock` y `stockMinimo` no sean negativos.
+
+### Excepción personalizada
+* **RecursoNoEncontradoException (`RecursoNoEncontradoException.java`):** Excepción de tiempo de ejecución (`RuntimeException`) que se dispara cuando un producto o categoría solicitada mediante un ID específico no existe en la base de datos. Es capturada por el manejador global `@RestControllerAdvice` para generar respuestas de error en formato JSON.
+
+### Códigos HTTP utilizados
+* **`200 OK`:** Retornado en consultas exitosas (`GET`) y actualizaciones de productos (`PUT`).
+* **`201 Created`:** Retornado tras la creación exitosa de un nuevo producto (`POST`).
+* **`204 No Content`:** Retornado al eliminar un producto existente (`DELETE`).
+* **`400 Bad Request`:** Retornado cuando fallan las validaciones `@Valid` de Bean Validation en el DTO de entrada.
+* **`404 Not Found`:** Retornado cuando no se encuentra el recurso solicitado en la base de datos.
+* **`500 Internal Server Error`:** Retornado ante errores no controlados en el servidor.
+
+---
+
+## Forma de ejecutar y probar la API
+
+### 1. Configuración de Base de Datos
+Asegurarse de tener ejecutando PostgreSQL y contar con la base de datos `papeleria_db` configurada en el archivo `src/main/resources/application.properties`:
+
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/papeleria_db
+spring.datasource.username=postgres
+spring.datasource.password=tu_contraseña

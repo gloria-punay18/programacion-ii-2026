@@ -1,41 +1,76 @@
 package com.papeleria.inventario.service;
 
+import com.papeleria.inventario.dto.ProductoRequestDTO;
+import com.papeleria.inventario.exception.RecursoNoEncontradoException;
+import com.papeleria.inventario.model.Categoria;
 import com.papeleria.inventario.model.Producto;
+import com.papeleria.inventario.repository.CategoriaRepository;
 import com.papeleria.inventario.repository.ProductoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProductoService {
 
-    @Autowired
-    private ProductoRepository productoRepository;
+    private final ProductoRepository repository;
+    private final CategoriaRepository categoriaRepository;
 
-    public List<Producto> obtenerTodos() {
-        return productoRepository.findAll();
+    public ProductoService(ProductoRepository repository, CategoriaRepository categoriaRepository) {
+        this.repository = repository;
+        this.categoriaRepository = categoriaRepository;
     }
 
-    public Optional<Producto> obtenerPorId(Long id) {
-        return productoRepository.findById(id);
+    public List<Producto> listar() {
+        return repository.findAll();
     }
 
-    public Producto guardar(Producto producto) {
-        return productoRepository.save(producto);
+    public Producto buscarPorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Registro no encontrado con ID: " + id));
+    }
+
+    public Producto registrar(ProductoRequestDTO dto) {
+        Producto producto = new Producto();
+        convertirDtoAEntidad(dto, producto);
+        return repository.save(producto);
+    }
+
+    public Producto actualizar(Long id, ProductoRequestDTO dto) {
+        Producto productoExistente = buscarPorId(id);
+        convertirDtoAEntidad(dto, productoExistente);
+        return repository.save(productoExistente);
+    }
+
+    public void eliminar(Long id) {
+        Producto producto = buscarPorId(id);
+        repository.delete(producto);
     }
 
     public List<Producto> obtenerProductosStockBajo(int limite) {
-        return productoRepository.findAll().stream()
+        return repository.findAll().stream()
                 .filter(p -> p.getStock() <= limite)
                 .toList();
     }
 
     public BigDecimal calcularValorTotalInventario() {
-        return productoRepository.findAll().stream()
+        return repository.findAll().stream()
                 .map(p -> p.getPrecio().multiply(BigDecimal.valueOf(p.getStock())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private void convertirDtoAEntidad(ProductoRequestDTO dto, Producto producto) {
+        producto.setCodigo(dto.getCodigo());
+        producto.setNombre(dto.getNombre());
+        producto.setDescripcion(dto.getDescripcion());
+        producto.setPrecio(dto.getPrecio());
+        producto.setStock(dto.getStock());
+        producto.setStockMinimo(dto.getStockMinimo());
+
+
+        Categoria categoria = categoriaRepository.findById(1L)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Categoría por defecto no encontrada con ID: 1"));
+        producto.setCategoria(categoria);
     }
 }
