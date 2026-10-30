@@ -4,6 +4,7 @@ import com.papeleria.inventario.dto.ProductoRequestDTO;
 import com.papeleria.inventario.model.Producto;
 import com.papeleria.inventario.service.ProductoService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,15 +16,12 @@ import java.util.List;
 @RequestMapping("/api/productos")
 public class ProductoController {
 
-    private final ProductoService productoService;
-
-    public ProductoController(ProductoService productoService) {
-        this.productoService = productoService;
-    }
+    @Autowired
+    private ProductoService productoService;
 
     @GetMapping
-    public ResponseEntity<List<Producto>> listar() {
-        return ResponseEntity.ok(productoService.listar());
+    public List<Producto> listar() {
+        return productoService.listar();
     }
 
     @GetMapping("/{id}")
@@ -33,13 +31,14 @@ public class ProductoController {
 
     @PostMapping
     public ResponseEntity<Producto> registrar(@Valid @RequestBody ProductoRequestDTO dto) {
-        Producto registrado = productoService.registrar(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(registrado);
+        Producto nuevoProducto = productoService.registrar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoProducto);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Producto> actualizar(@PathVariable Long id, @Valid @RequestBody ProductoRequestDTO dto) {
-        return ResponseEntity.ok(productoService.actualizar(id, dto));
+        Producto productoActualizado = productoService.actualizar(id, dto);
+        return ResponseEntity.ok(productoActualizado);
     }
 
     @DeleteMapping("/{id}")
@@ -48,13 +47,20 @@ public class ProductoController {
         return ResponseEntity.noContent().build();
     }
 
+
     @GetMapping("/stock-bajo")
-    public ResponseEntity<List<Producto>> obtenerStockBajo(@RequestParam(defaultValue = "5") int limite) {
-        return ResponseEntity.ok(productoService.obtenerProductosStockBajo(limite));
+    public List<Producto> obtenerStockBajo() {
+        return productoService.obtenerProductosStockBajo();
+    }
+
+
+    @GetMapping("/categoria/{categoriaId}")
+    public List<Producto> obtenerPorCategoria(@PathVariable Long categoriaId) {
+        return productoService.obtenerPorCategoria(categoriaId);
     }
 
     @GetMapping("/valor-total")
-    public ResponseEntity<BigDecimal> obtenerValorTotal() {
+    public ResponseEntity<BigDecimal> calcularValorTotal() {
         return ResponseEntity.ok(productoService.calcularValorTotalInventario());
     }
 }

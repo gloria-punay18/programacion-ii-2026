@@ -48,10 +48,18 @@ public class ProductoService {
         repository.delete(producto);
     }
 
-    public List<Producto> obtenerProductosStockBajo(int limite) {
+    public List<Producto> obtenerProductosStockBajo() {
         return repository.findAll().stream()
-                .filter(p -> p.getStock() <= limite)
+                .filter(p -> p.getStock() <= p.getStockMinimo())
                 .toList();
+    }
+
+
+    public List<Producto> obtenerPorCategoria(Long categoriaId) {
+        if (!categoriaRepository.existsById(categoriaId)) {
+            throw new RecursoNoEncontradoException("La categoría con ID " + categoriaId + " no existe.");
+        }
+        return repository.findByCategoriaId(categoriaId);
     }
 
     public BigDecimal calcularValorTotalInventario() {
@@ -69,8 +77,8 @@ public class ProductoService {
         producto.setStockMinimo(dto.getStockMinimo());
 
 
-        Categoria categoria = categoriaRepository.findById(1L)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Categoría por defecto no encontrada con ID: 1"));
+        Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
+                .orElseThrow(() -> new RecursoNoEncontradoException("La categoría especificada no existe con ID: " + dto.getCategoriaId()));
         producto.setCategoria(categoria);
     }
 }

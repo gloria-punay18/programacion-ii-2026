@@ -1,9 +1,11 @@
 package com.papeleria.inventario.controller;
 
+import com.papeleria.inventario.dto.MovimientoRequestDTO;
 import com.papeleria.inventario.model.MovimientoInventario;
-import com.papeleria.inventario.model.TipoMovimiento;
 import com.papeleria.inventario.service.MovimientoInventarioService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,16 +19,9 @@ public class MovimientoInventarioController {
     private MovimientoInventarioService movimientoService;
 
     @PostMapping
-    public ResponseEntity<?> registrarMovimiento(
-            @RequestParam Long productoId,
-            @RequestParam TipoMovimiento tipo,
-            @RequestParam Integer cantidad) {
-        try {
-            MovimientoInventario movimiento = movimientoService.registrarMovimiento(productoId, tipo, cantidad);
-            return ResponseEntity.ok(movimiento);
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<MovimientoInventario> registrarMovimiento(@Valid @RequestBody MovimientoRequestDTO dto) {
+        MovimientoInventario movimiento = movimientoService.registrarMovimiento(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(movimiento);
     }
 
     @GetMapping("/producto/{productoId}")
