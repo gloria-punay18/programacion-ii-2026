@@ -1,8 +1,8 @@
-# 📦 PF-13 | Gestión de Inventario para Papelería
+#  PF-13 | Gestión de Inventario para Papelería
 
 ---
 
-## 👤 Datos del Estudiante
+##  Datos del Estudiante
 - **Nombre Completo:** Gloria Punay
 - **Número de Carné:** 9941-25-22033
 - **Curso:** Programación II
